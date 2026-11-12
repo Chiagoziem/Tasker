@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tasker"
+version = "1.0.0"
+requires-python = ">=3.8"
+dependencies = ["psycopg2-binary"]
+
+[project.scripts]
+task = "work:main"
+tasker = "work:main"
+
+[tool.setuptools]
+py-modules = ["work"]
