@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: tasker
+Version: 1.0.1
+Requires-Python: >=3.8
+License-File: LICENSE
+Requires-Dist: psycopg2-binary
+Dynamic: license-file
