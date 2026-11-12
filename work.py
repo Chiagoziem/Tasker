@@ -8,6 +8,8 @@ commands (--push, --create-user, --create-project, --list-projects,
     pip install psycopg2-binary
     WORK_DATABASE_URL=postgresql://user:pass@host:5432/dbname
 """
+import code
+from os import name
 import argparse
 from datetime import datetime
 import os
@@ -103,6 +105,33 @@ def list_tasks(limit: int = 10):
     )
   print("-" * 50)
   print("☁️ = already pushed to server")
+
+
+def delete_task(log_id: int):
+  """Delete an unpushed task from the local database."""
+  init_db()
+  conn = sqlite3.connect(DB_PATH)
+  try:
+    row = conn.execute(
+        "SELECT task, project_name, pushed FROM work_logs WHERE id = ?",
+        (log_id,),
+    ).fetchone()
+
+    if row is None:
+      sys.exit(f"❌ No task found with ID {log_id}.")
+
+    task, project, pushed = row
+    if pushed:
+      sys.exit(
+          f"❌ Task {log_id} was already pushed to the server, so it can't be"
+          " deleted locally."
+      )
+
+    conn.execute("DELETE FROM work_logs WHERE id = ?", (log_id,))
+    conn.commit()
+    print(f"🗑️ Deleted task {log_id} [{project}]: \"{task}\"")
+  finally:
+    conn.close()
 
 
 # ---------------------------------------------------------------------------
@@ -264,6 +293,13 @@ def main():
       const=10,
       help="List recent local logs (optional: specify limit)",
   )
+  parser.add_argument(
+    "-d",
+    "--delete",
+    type=int,
+    metavar="ID",
+    help="Delete an unpushed task from your local history",
+  )
 
   server = parser.add_argument_group("server commands")
   server.add_argument(
@@ -313,6 +349,8 @@ def main():
     list_tasks(args.list)
   elif args.task:
     log_task(args.task, args.project, args.user)
+  elif args.delete is not None:
+    delete_task(args.delete)
   else:
     parser.print_help()
 
